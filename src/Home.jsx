@@ -1,6 +1,38 @@
-import { Button, Card, Container, Grid, Input, Typography } from "@mui/material";
+import { Button, Container, Grid, Input, Typography, Paper, createTheme, ThemeProvider, Box } from "@mui/material";
 import { invoke, } from "@tauri-apps/api/tauri"
 import { useState } from "react"
+
+const theme = createTheme({
+    typography: {
+        allVariants: {
+            fontFamily: 'Space Grotesk',
+            textTransform: 'none',
+        },
+    },
+});
+
+const textViewStyle = {
+    width: "100%",
+    minHeight: 200,
+    maxHeight: 200,
+    overflowY: "scroll",
+    backgroundColor: "#23272A",
+    color: "white"
+};
+
+const outputViewStyle = {
+    width: "100%",
+    minHeight: "100%",
+    maxHeight: "100%",
+    overflowY: "scroll",
+    backgroundColor: "#23272A",
+    color: "white"
+};
+
+const checkButtonStyle = {
+    backgroundColor: "#5865F2",
+    marginTop: 1
+};
 
 export default function Home() {
     const [result, setResult] = useState("");
@@ -42,59 +74,76 @@ export default function Home() {
         console.log("?? ", text, fileA, fileB, type);
     }
     return (
+        <ThemeProvider theme={theme}>
+            <Container>
+                <Grid container justifyContent={"center"} >
+                    <Box sx={{ m: 1 }} >
+                        <Typography variant="h3" > Plagiarism Checker </Typography>
+                    </Box>
 
-        <Container sx={{ justifyContent: "center", display: "block" }}>
-            <Typography variant="h4" textAlign={"center"} > Plagiarism Checker </Typography>
-            <Grid container spacing={2}>
-                <Grid item lg={6} xs={6} md={6} xl={6}><Typography variant="h5"> Source</Typography></Grid>
-                <Grid item lg={6} xs={6} md={6} xl={6}><Typography variant="h5"> Desitination</Typography></Grid>
-            </Grid>
-            <Grid container spacing={2}>
-                <Grid item lg={6} xs={6} md={6} xl={6}><Input type="file" id="file_a" onChange={async (e) => await readText(e, "a")} /></Grid>
-                <Grid item lg={6} xs={6} md={6} xl={6}><Input type="file" id="file_b" onChange={async (e) => await readText(e, "b")} /></Grid>
-            </Grid>
-            <br />
-            <Grid container spacing={2}>
-                <Grid item lg={6} xs={6} md={6} xl={6}>
-                    {fileA ? (
-                        <Card style={{ width: "100%", minHeight: 200, maxHeight: 200, overflowY: "scroll" }} >
-                            <Typography variant="caption">
-                                {fileA}
-                            </Typography>
-                        </Card>) : (<></>)}
+                    <Grid container spacing={2}>
+                        <Grid item lg={6} xs={6} md={6} xl={6}><Typography variant="h5"> Source</Typography></Grid>
+                        <Grid item lg={6} xs={6} md={6} xl={6}><Typography variant="h5"> Desitination</Typography></Grid>
+                    </Grid>
+
+                    <Grid container spacing={2}>
+                        <Grid item lg={6} xs={6} md={6} xl={6}>
+                            <Button variant="contained" component="label" color="error">
+                                Choose file
+                                <input type="file" id="file_a" onChange={async (e) => await readText(e, "a")} hidden />
+                            </Button>
+                        </Grid>
+                        <Grid item lg={6} xs={6} md={6} xl={6}>
+                            <Button variant="contained" component="label" color="success">
+                                Choose file
+                                <input type="file" id="file_b" onChange={async (e) => await readText(e, "b")} hidden />
+                            </Button>
+                        </Grid>
+                    </Grid>
+
+                    <Box marginTop={1} >
+                        <Grid container spacing={2}>
+                            <Grid item lg={6} xs={6} md={6} xl={6}>
+                                <Paper sx={textViewStyle} >
+                                    {fileA ? (
+                                        <Typography variant="subtitle">
+                                            {fileA}
+                                        </Typography>
+                                    ) : (<></>)}
+                                </Paper>
+                            </Grid>
+                            <Grid item lg={6} xs={6} md={6} xl={6}>
+                                <Paper sx={textViewStyle} >
+                                    {fileB ? (
+                                        <Typography variant="subtitle">
+                                            {fileB}
+                                        </Typography>
+                                    ) : (<></>)}
+                                </Paper>
+                            </Grid>
+                        </Grid>
+                    </Box>
+
+                    <Button onClick={checkPlagiarism} sx={checkButtonStyle} size="large" variant="contained" fullWidth > Check </Button>
+
+                    <Box marginTop={1} >
+                        <Grid container spacing={2}>
+                            <Grid item lg={12} xs={12} md={12} xl={12} >
+                                <Paper raised style={outputViewStyle}>
+                                    <Typography variant="h5" color={"lightgreen"}>
+                                        {highlighted}
+                                    </Typography>
+                                </Paper>
+                            </Grid>
+                        </Grid>
+                    </Box>
+                    {result != "" ? (
+                        <Box marginTop={1} >
+                            <Typography variant="h4" color={"#EB459E"}>Percentage: {result.percentage} %</Typography>
+                        </Box>) : ""}
+
                 </Grid>
-
-
-                <Grid item lg={6} xs={6} md={6} xl={6}>
-                    {fileB ? (
-                        <Card style={{ width: "100%", minHeight: 200, maxHeight: 200, overflowY: "scroll" }} >
-                            <Typography variant="caption">
-                                {fileB}
-                            </Typography>
-                        </Card>) : (<></>)}
-                </Grid>
-            </Grid>
-            <br />
-            <Grid container spacing={2}>
-                <Grid item lg={4} xs={4} md={4} xl={4} />
-                <Grid item lg={4} xs={4} md={4} xl={4} >
-                    <Button onClick={checkPlagiarism} variant="contained" fullWidth> check </Button>
-                </Grid>
-                <Grid item lg={4} xs={4} md={4} xl={4} />
-            </Grid>
-
-            <br />
-            <Grid container spacing={2}>
-                <Grid item lg={12} xs={12} md={12} xl={12} >
-                    <Card raised style={{ width: "100%", minHeight: 100, maxHeight: 100, overflowY: "scroll" }}> <Typography variant="caption" color={"darkgreen"}>{highlighted}</Typography></Card>
-                </Grid>
-
-            </Grid>
-            {result != "" ? (
-                <>
-                    <Typography variant="h4" textAlign={"center"} color={"red"}>Percentage: {result.percentage} %</Typography>
-                </>) : ""}
-        </Container>
-
+            </Container>
+        </ThemeProvider>
     )
 }
