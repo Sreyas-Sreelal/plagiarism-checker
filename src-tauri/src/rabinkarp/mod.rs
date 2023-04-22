@@ -22,11 +22,12 @@ impl<'a> PlagiarismChecker<'a> {
     }
     pub fn filter_content(&self, data: String) -> String {
         let stop_words = stop_words::get(stop_words::LANGUAGE::English);
-        let tokenized_words = tokenizer::en::Tokenizer.tokenize(&data);
+        let binding = data.to_ascii_lowercase();
+        let tokenized_words = tokenizer::en::Tokenizer.tokenize(&binding);
         let filtered: Vec<String> = tokenized_words
             .iter()
             .filter(|x| !stop_words.contains(&x.to_string()))
-            .map(|x| porter_stemmer::stem(&*x.to_ascii_lowercase()))
+            .map(|x| porter_stemmer::stem(&x))
             .collect();
         filtered.join(" ")
     }
@@ -46,7 +47,7 @@ impl<'a> PlagiarismChecker<'a> {
                 break;
             }
         }
-        println!("{:?}", self.hash_table)
+        /* println!("{:?}", self.hash_table) */
     }
 
     pub fn calaculate_plagiarism_rate(&mut self) -> (BTreeSet<usize>, String, String, f64) {
@@ -57,7 +58,7 @@ impl<'a> PlagiarismChecker<'a> {
 
         let a = &self.hash_table["a"];
         let b = &self.hash_table["b"];
-        println!("{:?}", self.hash_table);
+       
         let common = a
             .iter()
             .partition::<BTreeSet<((usize, usize), i64)>, _>(|x| {
@@ -69,7 +70,7 @@ impl<'a> PlagiarismChecker<'a> {
                 false
             });
         let sh = common.0.len();
-        println!("\n{:?}\n", common.0);
+        /* println!("\n{:?}\n", common.0); */
         let mut matched_idx = BTreeSet::new();
 
         for (x, _) in &common.0 {
@@ -80,10 +81,10 @@ impl<'a> PlagiarismChecker<'a> {
         let content_a = self.filter_content(self.content_a.clone());
         let content_b = self.filter_content(self.content_b.clone());
 
-        for x in &matched_idx {
+        /* for x in &matched_idx {
             print!("{}", content_a.as_bytes()[*x] as char)
         }
-        println!("\n{} {} {}", sh, th_a, th_b);
+        println!("\n{} {} {}", sh, th_a, th_b); */
 
         let p = ((2 * sh) as f64 / (th_a + th_b) as f64) * 100.0;
         (matched_idx, content_a, content_b, p)
